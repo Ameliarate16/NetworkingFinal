@@ -1,7 +1,8 @@
 #pragma once
+
 class NetworkManager
 {
-public:
-	bool InitializeNetworking();
+protected:
+	virtual bool InitializeNetworking();
 };
 

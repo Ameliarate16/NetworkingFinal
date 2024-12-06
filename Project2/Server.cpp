@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 #include <iostream>
+#include "ServerNetworkManager.h"
 
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768;
