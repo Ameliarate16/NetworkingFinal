@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	// receive all player states from server via UDP
 	// receive game state from server via TCP
 	// once end condition has been reached, server declares a winner
-	// players sent back to lobby
+	// players sent back to lobby, start over
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);

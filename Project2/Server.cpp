@@ -19,8 +19,8 @@ int main(int argc, char* argv[])
 	// host player can start game and maybe change settings
 	// all players are sent to game map and wait until everyone loads in
 	// countdown to game start
-	// continually receive and send send player location and cooldown data to all players via UDP
-	// when a player dies, mark score or lives or whatever and propagate via TCP
+	// continually receive and send player location and cooldown data to all players via UDP
+	// when a player dies, mark score or lives or whatever and propagate game state via TCP
 	// once end condition has been reached, declare a winner
 	// send players back to lobby
 
