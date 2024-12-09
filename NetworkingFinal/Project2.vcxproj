@@ -74,6 +74,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>C:\Users\anmor\Documents\Humber\GAME 356\vcpkg\packages\sdl2-ttf_x64-windows\debug\lib\pkgconfig;C:\Users\anmor\Documents\Humber\GAME 356\vcpkg\packages\sdl2-ttf_x64-windows\debug\lib;C:\Users\anmor\Documents\Humber\GAME 356\vcpkg\packages\openssl_x64-windows\debug\lib;C:\Users\anmor\Documents\Humber\GAME 356\vcpkg\packages\sdl2_x64-windows\debug\lib;C:\Users\anmor\Documents\Humber\GAME 356\vcpkg\packages\sdl2_x64-windows\debug\lib\manual-link;C:\Users\anmor\Documents\Humber\GAME 356\vcpkg\packages\sdl2-net_x64-windows\debug\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\GameDev\OpenGL\include;C:\GameDev\SDL\include;C:\Users\tanph\OneDrive\Desktop\vcpkg\vcpkg\packages\sdl2-net_x64-windows\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\GameDev %281%29\GameDev\OpenGL\lib;C:\GameDev %281%29\GameDev\SDL\lib;C:\Users\tanph\OneDrive\Desktop\vcpkg\vcpkg\packages\sdl2-net_x64-windows\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -84,6 +88,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\GameDev\OpenGL\lib;C:\GameDev\SDL\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_mixer.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -132,17 +138,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Client.cpp" />
+    <ClCompile Include="Arrow.cpp" />
     <ClCompile Include="ClientNetworkManager.cpp" />
+    <ClCompile Include="CollisionChecking.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
-    <ClCompile Include="Server.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="ServerNetworkManager.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Arrow.h" />
     <ClInclude Include="ClientNetworkManager.h" />
+    <ClInclude Include="CollisionChecking.h" />
     <ClInclude Include="NetworkManager.h" />
+    <ClInclude Include="Platform.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ServerNetworkManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
