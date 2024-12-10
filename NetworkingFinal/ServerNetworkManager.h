@@ -4,5 +4,7 @@
 class ServerNetworkManager :
 	public NetworkManager
 {
+public: 
+//	void SerializeData();
 };
 
