@@ -5,13 +5,19 @@
 #include "ClientNetworkManager.h"
 
 const int WINDOW_WIDTH = 1024;
-const int WINDOW_HEIGHT = 768;
+const int WINDOW_HEIGHT = 768; 
 
 int main(int argc, char* argv[])
 {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
+		return 1;
+	}
+
+	if (SDLNet_Init() < 0)
+	{
+		std::cerr << "SDL_net initialization failed: " << SDL_GetError() << std::endl;
 		return 1;
 	}
 
@@ -27,6 +33,7 @@ int main(int argc, char* argv[])
 	std::string serverAddress = "127.0.0.1";
 	int serverPort = 8080; 
 	std::string username = "Client";
+
 	if (argc > 1)
 		serverAddress = argv[1];
 	if (argc > 2)
@@ -37,7 +44,7 @@ int main(int argc, char* argv[])
 	IPaddress ip; 
 	if (SDLNet_ResolveHost(&ip, serverAddress.c_str(), serverPort) < 0)
 	{
-		std::cerr << "Failed to resolve server address: " << SDLNet_GetError() << std::endl;
+		std::cerr << "Failed to resolve server address: ( " << serverAddress << ":" << serverPort << "): "  << SDLNet_GetError() << std::endl; 
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
 		SDLNet_Quit();
@@ -48,7 +55,7 @@ int main(int argc, char* argv[])
 	TCPsocket clientSocket = SDLNet_TCP_Open(&ip);
 	if (!clientSocket)
 	{
-		std::cerr << "Failed tp connect to server:" << SDLNet_GetError() << std::endl;
+		std::cerr << "Failed to connect to server (" << serverAddress << ":" << serverPort << "): " << SDLNet_GetError() << std::endl;
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
 		SDLNet_Quit();
@@ -61,19 +68,36 @@ int main(int argc, char* argv[])
 
 	// communicate with the server 
 	const int BUFFER_SIZE = 512; //will have to change it
-	char buffer[BUFFER_SIZE]; 
+	char buffer[BUFFER_SIZE]{0};
 	std::string message = "Client has connected to server!";
-	SDLNet_TCP_Send(clientSocket, message.c_str(), message.length());
 
-	int recived = SDLNet_TCP_Recv(clientSocket, buffer, BUFFER_SIZE - 1);
-	if (recived > 0)
+
+	if (SDLNet_TCP_Send(clientSocket, message.c_str(), message.length()) < message.length())
 	{
-
-		buffer[recived] = '\0';
-		std::cout << "Server says: " << buffer << std::endl;
+		std::cerr << "Failed to send data to server: " << SDLNet_GetError() << std::endl;
+	}
+	else
+	{
+		int recived = SDLNet_TCP_Recv(clientSocket, buffer, BUFFER_SIZE - 1);
+		if (recived <= 0)
+		{
+			std::cerr << "Failed to recive data from server: " << SDLNet_GetError() << std::endl; 
+		}
+		else
+		{
+			buffer[recived] = '\0';
+			std::cout << "Server says: " << buffer << std::endl;
+		}
 	}
 
-	
+	SDLNet_TCP_Close(clientSocket);
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDLNet_Quit();
+	SDL_Quit();
+	return 0;
+}
+
 	// on startup, connect to lobby via TCP
 	// host player can start game and maybe change settings
 	// all players are sent to game map and wait until everyone loads in
@@ -84,12 +108,3 @@ int main(int argc, char* argv[])
 	// receive game state from server via TCP
 	// once end condition has been reached, server declares a winner
 	// players sent back to lobby, start over
-
-
-	SDLNet_TCP_Close(clientSocket);
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDLNet_Quit();
-	SDL_Quit();
-	return 0;
-}

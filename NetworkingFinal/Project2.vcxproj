@@ -135,7 +135,6 @@
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="ClientNetworkManager.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
-    <ClCompile Include="Server.cpp" />
     <ClCompile Include="ServerNetworkManager.cpp" />
   </ItemGroup>
   <ItemGroup>
