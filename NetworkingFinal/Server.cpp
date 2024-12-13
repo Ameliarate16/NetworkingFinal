@@ -1,10 +1,34 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 #include <iostream>
+#include <string.h>
+#include <thread>
+#include <vector>
+#include <mutex>
 #include "ServerNetworkManager.h"
 
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768;
+
+std::mutex clientListMutex;
+std::vector<bool> playersReady;
+//move this later
+
+
+
+TCPsocket init(const char* host, Uint16 port)
+{
+	SDL_Init(SDL_INIT_EVERYTHING);
+	SDLNet_Init();
+
+	IPaddress ip;
+	SDLNet_ResolveHost(&ip, host, port);
+
+	TCPsocket server = SDLNet_TCP_Open(&ip);
+
+	return server;
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -13,6 +37,33 @@ int main(int argc, char* argv[])
 		std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
 		return 1;
 	}
+	//Nathan work here
+
+	std::vector<std::thread> clientThreads;
+
+	bool quit = false;
+	bool serverLoop = true;
+	enum MyEnum
+	{
+
+	};
+
+	TCPsocket server = init(NULL, 8080);
+
+	char serverInput[1024];
+
+
+
+
+	while (!quit)
+	{
+		networkLoop(serverLoop, server, clientThreads, serverInput);
+
+
+	}
+
+
+
 
 	// on startup, create lobby
 	// receive TCP connections from players to populate lobby
@@ -27,4 +78,115 @@ int main(int argc, char* argv[])
 
 	SDL_Quit();
 	return 0;
+}
+
+void handleClient(TCPsocket client, char* serverMsg, int clientNum)
+//void handleClient(TCPsocket client)
+{
+	char buffer[1024];
+	//const char* response = "Server received your message.";
+
+	while (true) {
+		int received = SDLNet_TCP_Recv(client, buffer, sizeof(buffer));
+		if (received > 0) {
+			buffer[received - 1] = '\0';  // Null-terminate the received data
+			printf("Received: %s\n", buffer);
+
+			// Check for the exit command
+			if (strcmp(buffer, "quit") == 0) {
+				printf("Client requested to exit. Closing connection.\n");
+				break;
+			}
+
+			if (strcmp(buffer, "ready") == 0)
+			{
+				playersReady[clientNum] = true;
+
+			}
+
+
+			// Send response to the client
+			//SDLNet_TCP_Send(client, response, strlen(response) + 1);
+
+
+			////Server message is not empty
+			//if (serverMsg[0] != '\0')
+			//	SDLNet_TCP_Send(client, serverMsg, sizeof(serverMsg));
+			//else
+			//{
+			//	//Send default message if server did not send a message
+			//	const char* response = "Server received your message.";
+			//	SDLNet_TCP_Send(client, response, strlen(response) + 1);
+			//	//SDLNet_TCP_Send(client, response, sizeof(response));
+			//}
+
+
+		}
+		else {
+			// Client disconnected or error occurred
+			printf("Client Disconnected\n");
+			break;
+		}
+	}
+
+	SDLNet_TCP_Close(client);
+
+	std::lock_guard<std::mutex> lock(clientListMutex);
+	// Handle client removal from your data structures if necessary
+}
+
+
+
+void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput)
+//void networkLoop(bool serverLoop, TCPsocket server, std::vector<std::thread> &clientThreads, char *serverInput)
+{
+int numOfClients = 0;
+//move to main if needed
+	while (serverLoop) 
+	{
+		
+		TCPsocket client = SDLNet_TCP_Accept(server);
+		if (client) 
+		{
+			numOfClients++;
+			playersReady.push_back(false);
+			printf("Client Connected\n");
+			// Start a new thread to handle communication with the client
+			//std::thread clientThread(handleClient, client);
+			std::thread clientThread(handleClient, client, serverInput, numOfClients -1);
+			clientThreads.push_back(std::move(clientThread));
+		}
+
+		else
+		{
+			printf("Searching for connection\n");
+			auto currentTime = std::chrono::system_clock::now();
+
+			// Calculate a time point 5 seconds into the future
+			auto wakeUpTime = currentTime + std::chrono::seconds(1);
+
+			// Sleep until the specified time
+			std::this_thread::sleep_until(wakeUpTime);
+		}
+
+		bool everyoneReady = true;
+		for (bool playerReady : playersReady)
+		{
+			if (!playerReady)
+			{
+				everyoneReady = false;
+			}
+
+		}
+		if (everyoneReady)
+		{
+			serverLoop = false;
+
+		}
+
+
+
+		
+	}
+
 }

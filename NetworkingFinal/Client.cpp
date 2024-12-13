@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
 	if (argc > 2)
 		username = argv[2];
 
+	
 	// on startup, connect to lobby via TCP
 	// host player can start game and maybe change settings
 	// all players are sent to game map and wait until everyone loads in

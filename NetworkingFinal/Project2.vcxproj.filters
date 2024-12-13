@@ -36,6 +36,9 @@
     <ClCompile Include="ServerNetworkManager.cpp">
       <Filter>Source Files\Networking</Filter>
     </ClCompile>
+    <ClCompile Include="Stage_4_Server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkManager.h">
@@ -46,6 +49,9 @@
     </ClInclude>
     <ClInclude Include="ClientNetworkManager.h">
       <Filter>Header Files\Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerState.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

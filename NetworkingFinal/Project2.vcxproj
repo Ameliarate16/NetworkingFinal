@@ -136,13 +136,15 @@
     <ClCompile Include="ClientNetworkManager.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="Server.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="ServerNetworkManager.cpp" />
+    <ClCompile Include="Stage_4_Server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClientNetworkManager.h" />
     <ClInclude Include="NetworkManager.h" />
+    <ClInclude Include="PlayerState.h" />
     <ClInclude Include="ServerNetworkManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
