@@ -30,57 +30,8 @@ TCPsocket init(const char* host, Uint16 port)
 }
 
 
-int main(int argc, char* argv[])
-{
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-	{
-		std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
-		return 1;
-	}
-	//Nathan work here
 
-	std::vector<std::thread> clientThreads;
-
-	bool quit = false;
-	bool serverLoop = true;
-	enum MyEnum
-	{
-
-	};
-
-	TCPsocket server = init(NULL, 8080);
-
-	char serverInput[1024];
-
-
-
-
-	while (!quit)
-	{
-		networkLoop(serverLoop, server, clientThreads, serverInput);
-
-
-	}
-
-
-
-
-	// on startup, create lobby
-	// receive TCP connections from players to populate lobby
-	// create a networking thread for each player
-	// host player can start game and maybe change settings
-	// all players are sent to game map and wait until everyone loads in
-	// countdown to game start
-	// continually receive and send player location and cooldown data to all players via UDP
-	// when a player dies, mark score or lives or whatever and propagate game state via TCP
-	// once end condition has been reached, declare a winner
-	// send players back to lobby
-
-	SDL_Quit();
-	return 0;
-}
-
-void handleClient(TCPsocket client, char* serverMsg, int clientNum)
+void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfClients)
 //void handleClient(TCPsocket client)
 {
 	char buffer[1024];
@@ -101,8 +52,28 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum)
 			if (strcmp(buffer, "ready") == 0)
 			{
 				playersReady[clientNum] = true;
+				std::cout << "Player " << clientNum + 1 << " is ready!" << std::endl;
+			}
+
+			int readyCounter = 0;
+			for (auto readyCheck : playersReady)
+			{
+				if (readyCheck == true)
+				{
+					readyCounter++;
+					
+					//loop through playersReady
+					//if true, increment counter 
+					// if number of clients = counter, send everyone start message
+				}	
 
 			}
+			if (numOfClients == readyCounter)
+			{
+				std::string message = "start";
+				SDLNet_TCP_Send(client, message.c_str(), message.length());
+			}
+			
 
 
 			// Send response to the client
@@ -135,15 +106,12 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum)
 	// Handle client removal from your data structures if necessary
 }
 
-
-
-void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput)
+void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients)
 //void networkLoop(bool serverLoop, TCPsocket server, std::vector<std::thread> &clientThreads, char *serverInput)
 {
-int numOfClients = 0;
-//move to main if needed
 	while (serverLoop) 
 	{
+
 		
 		TCPsocket client = SDLNet_TCP_Accept(server);
 		if (client) 
@@ -189,4 +157,57 @@ int numOfClients = 0;
 		
 	}
 
+}
+
+
+int main(int argc, char* argv[])
+{
+
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
+		std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
+		return 1;
+	}
+	//Nathan work here
+
+	std::vector<std::thread> clientThreads;
+
+	int numOfClients = 0;
+	bool quit = false;
+	bool serverLoop = true;
+	enum MyEnum
+	{
+
+	};
+
+	TCPsocket server = init(NULL, 8080);
+
+	char serverInput[1024];
+
+
+
+
+	while (!quit)
+	{
+		networkLoop(serverLoop, server, clientThreads, serverInput, numOfClients);
+
+
+	}
+
+
+
+
+	// on startup, create lobby
+	// receive TCP connections from players to populate lobby
+	// create a networking thread for each player
+	// host player can start game and maybe change settings
+	// all players are sent to game map and wait until everyone loads in
+	// countdown to game start
+	// continually receive and send player location and cooldown data to all players via UDP
+	// when a player dies, mark score or lives or whatever and propagate game state via TCP
+	// once end condition has been reached, declare a winner
+	// send players back to lobby
+
+	SDL_Quit();
+	return 0;
 }
