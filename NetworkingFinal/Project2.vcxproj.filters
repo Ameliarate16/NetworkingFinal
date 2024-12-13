@@ -19,6 +19,12 @@
     <Filter Include="Source Files\Networking">
       <UniqueIdentifier>{ac9c1576-407e-4211-aa99-27dfe0e9e75f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gameplay">
+      <UniqueIdentifier>{810563c2-6357-4a3d-9207-6a5fa3f5f53e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Gameplay">
+      <UniqueIdentifier>{fe74a0d9-6a74-4a9c-89ab-f1becb2eda89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClientNetworkManager.cpp">
@@ -36,6 +42,21 @@
     <ClCompile Include="Server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files\Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>Source Files\Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform.cpp">
+      <Filter>Source Files\Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionChecking.cpp">
+      <Filter>Source Files\Gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Arrow.cpp">
+      <Filter>Source Files\Gameplay</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkManager.h">
@@ -47,8 +68,22 @@
     <ClInclude Include="ClientNetworkManager.h">
       <Filter>Header Files\Networking</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="PlayerState.h">
       <Filter>Header Files</Filter>
+=======
+    <ClInclude Include="Arrow.h">
+      <Filter>Header Files\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionChecking.h">
+      <Filter>Header Files\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform.h">
+      <Filter>Header Files\Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Header Files\Gameplay</Filter>
+>>>>>>> origin/Tan_gameplay
     </ClInclude>
   </ItemGroup>
 </Project>
