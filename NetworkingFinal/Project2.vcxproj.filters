@@ -47,5 +47,8 @@
     <ClInclude Include="ClientNetworkManager.h">
       <Filter>Header Files\Networking</Filter>
     </ClInclude>
+    <ClInclude Include="PlayerState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

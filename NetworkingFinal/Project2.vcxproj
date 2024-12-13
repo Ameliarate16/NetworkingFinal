@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClInclude Include="ClientNetworkManager.h" />
     <ClInclude Include="NetworkManager.h" />
+    <ClInclude Include="PlayerState.h" />
     <ClInclude Include="ServerNetworkManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
