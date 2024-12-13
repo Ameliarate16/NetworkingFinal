@@ -1,4 +1,5 @@
 #pragma once
+#include "SDL2/SDL_net.h"
 
 class NetworkManager
 {
