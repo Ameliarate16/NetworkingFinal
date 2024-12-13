@@ -76,22 +76,6 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 			
 
 
-			// Send response to the client
-			//SDLNet_TCP_Send(client, response, strlen(response) + 1);
-
-
-			////Server message is not empty
-			//if (serverMsg[0] != '\0')
-			//	SDLNet_TCP_Send(client, serverMsg, sizeof(serverMsg));
-			//else
-			//{
-			//	//Send default message if server did not send a message
-			//	const char* response = "Server received your message.";
-			//	SDLNet_TCP_Send(client, response, strlen(response) + 1);
-			//	//SDLNet_TCP_Send(client, response, sizeof(response));
-			//}
-
-
 		}
 		else {
 			// Client disconnected or error occurred
@@ -121,7 +105,7 @@ void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& c
 			printf("Client Connected\n");
 			// Start a new thread to handle communication with the client
 			//std::thread clientThread(handleClient, client);
-			std::thread clientThread(handleClient, client, serverInput, numOfClients -1);
+			std::thread clientThread(handleClient, client, serverInput, numOfClients -1, std::ref(numOfClients));
 			clientThreads.push_back(std::move(clientThread));
 		}
 
