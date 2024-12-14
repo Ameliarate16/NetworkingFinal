@@ -11,16 +11,19 @@ class Player;
 class NetworkManager
 {
 public:
-	virtual void cleanup();
+	virtual bool InitializeUDP();
+	virtual void Cleanup();
 
 
 protected:
-	virtual bool InitializeNetworking();
 
 	// Serialize playerStates[playerNum] into packet
 	void SerializePlayerState(UDPpacket* packet, std::vector<Ref<Player>> playerStates, int playerNum);
 
 	// Deserialize packet into corresponding playerState
 	void DeserializePlayerState(UDPpacket* packet, std::vector<Ref<Player>> playerStates);
+
+	UDPsocket udpSocket;
+	UDPpacket* packet;
 };
 

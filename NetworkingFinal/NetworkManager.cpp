@@ -3,21 +3,30 @@
 #include "PlayerStateMini.h"
 #include "Player.h"
 
-void NetworkManager::cleanup()
+bool NetworkManager::InitializeUDP()
 {
-}
-
-bool NetworkManager::InitializeNetworking()
-{
-	//initialize SDLNet
-	/*if (SDLNet_Init() < 0) {
-		SDL_Log("SDLNet initialization failed: %s", SDLNet_GetError());
-		SDL_Quit();
+	//open UDP socket
+	udpSocket = SDLNet_UDP_Open(8080);
+	if (!udpSocket) {
+		SDL_Log("SDLNet_UDP_Open error: %s", SDLNet_GetError());
 		return false;
 	}
 
-    return true;*/
+	//create UDP packet
+	packet = SDLNet_AllocPacket(1024);
+	if (!packet) {
+		SDL_Log("SDLNet_AllocPacket error: %s", SDLNet_GetError());
+		SDLNet_UDP_Close(udpSocket);
+		return false;
+	}
+
 	return true;
+}
+
+void NetworkManager::Cleanup()
+{
+	SDLNet_FreePacket(packet);
+	SDLNet_UDP_Close(udpSocket);
 }
 
 void NetworkManager::SerializePlayerState(UDPpacket* packet, std::vector<Ref<Player>> playerStates, int playerNum)
