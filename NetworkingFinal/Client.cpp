@@ -90,6 +90,31 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	bool IsRunning = true;
+	while (IsRunning) {
+		std::cout << "Type 'ready' to start game, or 'exit' to quit game: ";
+		std::string input;
+		std::getline(std::cin, input);
+
+		if (input == "ready") {
+			std::string readyMessage = "Ready";
+			if (SDLNet_TCP_Send(clientSocket, readyMessage.c_str(), readyMessage.length()) < readyMessage.length()) {
+				std::cerr << "Failed to send READY message to server: " << SDLNet_GetError() << std::endl;
+			}
+			else 
+			{
+				std::cout << "Sent READY message to server." << std::endl;
+			}
+		}
+		else if (input == "exit") 
+		{
+			IsRunning = false;
+		}
+		else {
+			std::cout << "Unknown command. Please type 'ready' or 'exit'." << std::endl;
+		}
+	}
+
 	SDLNet_TCP_Close(clientSocket);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
