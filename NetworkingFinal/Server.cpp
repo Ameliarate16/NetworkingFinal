@@ -1,7 +1,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 #include <iostream>
-#include <string.h>
+//#include <string.h>
+#include <string>
 #include <thread>
 #include <vector>
 #include <mutex>
@@ -49,7 +50,7 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 				break;
 			}
 
-			if (strcmp(buffer, "ready") == 0)
+			if (strcmp(buffer, "Ready") == 0)
 			{
 				playersReady[clientNum] = true;
 				std::cout << "Player " << clientNum + 1 << " is ready!" << std::endl;
@@ -62,9 +63,6 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 				{
 					readyCounter++;
 					
-					//loop through playersReady
-					//if true, increment counter 
-					// if number of clients = counter, send everyone start message
 				}	
 
 			}
@@ -72,6 +70,7 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 			{
 				std::string message = "start";
 				SDLNet_TCP_Send(client, message.c_str(), message.length());
+			
 			}
 			
 
@@ -105,8 +104,12 @@ void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& c
 			printf("Client Connected\n");
 			// Start a new thread to handle communication with the client
 			//std::thread clientThread(handleClient, client);
+			std::string message = std::to_string(numOfClients);
+			SDLNet_TCP_Send(client, message.c_str(), message.length());
 			std::thread clientThread(handleClient, client, serverInput, numOfClients -1, std::ref(numOfClients));
 			clientThreads.push_back(std::move(clientThread));
+
+
 		}
 
 		else

@@ -145,7 +145,9 @@
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="ServerNetworkManager.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arrow.h" />

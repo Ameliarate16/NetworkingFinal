@@ -8,6 +8,9 @@
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="ServerNetworkManager.cpp" />
+    <ClCompile Include="Server.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arrow.h" />
@@ -17,5 +20,6 @@
     <ClInclude Include="Platform.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerStateMini.h" />
+    <ClInclude Include="ServerNetworkManager.h" />
   </ItemGroup>
 </Project>
