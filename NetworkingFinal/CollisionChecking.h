@@ -1,7 +1,7 @@
 #ifndef COLLISION_CHECKING_H
 #define COLLISION_CHECKING_H
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 enum class CollisionDirection {
     NONE,

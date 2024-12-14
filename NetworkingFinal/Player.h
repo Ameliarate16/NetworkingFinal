@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <chrono>
 #include "Platform.h"
 
@@ -36,7 +36,7 @@ public:
 	Platform* currentPlatform;
 
 	Player(int x, int y, int size, SDL_Color color);
-	void HandleInput(const Uint8* keystate); 
+	void HandleInput(const uint8_t* keystate); 
 	void StartDash(float dir_x, float dir_y); 
 	void Jump(); 
 	void Update(const float deltaTime); 

@@ -1,15 +1,26 @@
 #pragma once
 #include "NetworkManager.h"
-#include "PlayerStateMini.h"
+#include "Player.h"
 #include <vector>
+#include <memory>
 
 class ClientNetworkManager :
     public NetworkManager
 {
-    UDPpacket* networkingPacket;
-    std::vector<PlayerStateMini> playerStates;
+public:
+    /*
+    UDPsocket* udpSocket;
+    IPaddress server;
+    UDPpacket* packet;
+    int numPlayers;
+    std::vector<Ref<Player>> playerStates;
+    */
 
-    void SerializePlayerState(UDPpacket* packet, const PlayerStateMini& ownState);
-    void DeserializePlayerStates(UDPpacket* packet, std::vector<PlayerStateMini>& allStates);
+    //Send playerStates[playerNum] to server as packet through socket
+    void SendPlayerState(UDPsocket socket, UDPpacket* packet, std::vector<Ref<Player>> playerStates, int playerNum);
+
+    //Try to receive a playerState from server as packet through socket
+    void ReceivePlayerState(UDPsocket socket, UDPpacket* packet, std::vector<Ref<Player>> playerStates);
+
 };
 

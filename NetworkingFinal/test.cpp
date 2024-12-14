@@ -1,5 +1,5 @@
 // main.cpp
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <iostream>
 #include <vector>
 #include <algorithm> // For std::remove_if

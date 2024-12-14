@@ -2,7 +2,7 @@
 #ifndef ARROW_H
 #define ARROW_H
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 class Arrow {
 public:

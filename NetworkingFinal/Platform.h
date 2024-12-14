@@ -1,7 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 enum class PlatformType {
 	STATIC,

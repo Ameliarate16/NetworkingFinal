@@ -1,4 +1,6 @@
 #pragma once
+#include "Player.h"
+#include <chrono>
 
 struct PlayerStateMini
 {
@@ -6,12 +8,25 @@ struct PlayerStateMini
 
 	short x;
 	short y;
-	uint8_t velX;
-	uint8_t velY;
+	short velXHundredths;
+	short velYHundredths;
 
-	short dashCooldownMicrosecs;
-	const short dashCooldownMaxMicrosecs;
+	short dashCooldownMillisecs;
 
-	bool isJumping;
 	bool isDead;
+
+	PlayerStateMini(int playerNum_, const Player& player_)
+	{
+		playerNum = playerNum_;
+		x = player_.rect.x;
+		y = player_.rect.y;
+		velXHundredths = player_.velX * 100;
+		velYHundredths = player_.velY * 100;
+
+		dashCooldownMillisecs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<float>(std::chrono::steady_clock::now() - player_.lastDashTime)).count();
+
+		isDead = player_.isDead;
+	}
+
+	PlayerStateMini() = default;
 };
