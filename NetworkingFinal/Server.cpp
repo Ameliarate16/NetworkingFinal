@@ -146,6 +146,24 @@ void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& c
 
 }
 
+void networkGameLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients)
+{
+	while (serverLoop)
+	{
+
+
+
+
+
+
+
+
+	}
+
+
+}
+
+
 
 int main(int argc, char* argv[])
 {
