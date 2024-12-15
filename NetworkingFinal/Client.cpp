@@ -64,31 +64,27 @@ int main(int argc, char* argv[])
 	}
 
 	std::cout << "Connected to server at" << serverAddress << ":" << serverPort << std::endl;
-
-
+	
+	//implent a TCP recive function for what player number you are 
 	// communicate with the server 
 	const int BUFFER_SIZE = 512; //will have to change it
 	char buffer[BUFFER_SIZE]{0};
-	std::string message = "Client has connected to server!";
 
+	int recived = SDLNet_TCP_Recv(clientSocket, buffer, BUFFER_SIZE - 1);
+	if(recived <= 0)
+	{
+		std::cerr << "Failed to recivee data from server: " << SDLNet_GetError() << std::endl; 
+		SDLNet_TCP_Close(clientSocket);
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+		SDLNet_Quit();
+		SDL_Quit();
+		return 1;
+	}
 
-	if (SDLNet_TCP_Send(clientSocket, message.c_str(), message.length()) < message.length())
-	{
-		std::cerr << "Failed to send data to server: " << SDLNet_GetError() << std::endl;
-	}
-	else
-	{
-		int recived = SDLNet_TCP_Recv(clientSocket, buffer, BUFFER_SIZE - 1);
-		if (recived <= 0)
-		{
-			std::cerr << "Failed to recive data from server: " << SDLNet_GetError() << std::endl; 
-		}
-		else
-		{
-			buffer[recived] = '\0';
-			std::cout << "Server says: " << buffer << std::endl;
-		}
-	}
+	buffer[recived] = '\0';
+	std::cout << "Assigning the Player Number from the server: " << buffer << std::endl;
+	
 
 	bool IsRunning = true;
 	while (IsRunning) {
