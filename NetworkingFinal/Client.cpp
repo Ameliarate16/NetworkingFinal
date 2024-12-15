@@ -4,6 +4,9 @@
 #include <string>
 #include "ClientNetworkManager.h"
 
+//Name Matteo Mastrantoni, Student Number N01541856 
+// Job: Client.cpp code 
+
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768; 
 
