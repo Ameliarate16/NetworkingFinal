@@ -83,9 +83,13 @@ int main(int argc, char* argv[])
 	}
 
 	buffer[recived] = '\0';
-	std::cout << "Assigning the Player Number from the server: " << buffer << std::endl;
+	std::string NumberPlayerStr(buffer); 
+	std::cout << "Assigning the Player Number from the server: " << NumberPlayerStr << std::endl;
 	
+	int NumberOfPlayer = std::stoi(NumberPlayerStr);
+	std::cout << "Player number stored as: " << NumberOfPlayer << std::endl;
 
+	//recive a message of start from the server when the game is active.  
 	bool IsRunning = true;
 	while (IsRunning) {
 		std::cout << "Type 'ready' to start game, or 'exit' to quit game: ";
@@ -108,6 +112,19 @@ int main(int argc, char* argv[])
 		}
 		else {
 			std::cout << "Unknown command. Please type 'ready' or 'exit'." << std::endl;
+		}
+
+		//recive the meesage from the server 
+		recived = SDLNet_TCP_Recv(clientSocket, buffer, BUFFER_SIZE - 1);
+		if (recived > 0)
+		{
+			buffer[recived] = '\0';
+			std::cout << " Server Message says: " << buffer << std::endl;
+		}
+		else if (recived == 0)
+		{
+			std::cerr << "Server has been Disconnected" << std::endl; 
+			IsRunning = false;
 		}
 	}
 
