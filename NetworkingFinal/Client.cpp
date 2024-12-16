@@ -92,6 +92,8 @@ int main(int argc, char* argv[])
 	int NumberOfPlayer = std::stoi(NumberPlayerStr);
 	std::cout << "Player number stored as: " << NumberOfPlayer << std::endl;
 
+	ClientNetworkManager clientUDP;
+
 	//recive a message of start from the server when the game is active.  
 	bool IsRunning = true;
 	while (IsRunning) {

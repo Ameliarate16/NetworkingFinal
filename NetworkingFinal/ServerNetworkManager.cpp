@@ -27,6 +27,8 @@ void ServerNetworkManager::ReceivePlayerState(std::vector<Ref<Player>> playerSta
 	int receiveResult = SDLNet_UDP_Recv(udpSocket, packet);
 	if (receiveResult > 0)
 	{
+		std::cout << "I got something!\n";
+
 		DeserializePlayerState(packet, playerStates);
 		
 		memset(packet->data, 0, packet->maxlen);

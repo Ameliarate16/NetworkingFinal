@@ -2,6 +2,8 @@
 #include "SDL2/SDL_net.h"
 #include <vector>
 #include <memory>
+#include <mutex>
+
 
 template<typename T>
 using Ref = std::shared_ptr<T>;
@@ -13,6 +15,8 @@ class NetworkManager
 public:
 	virtual bool InitializeUDP();
 	virtual void Cleanup();
+
+	static std::mutex playerStateMutex;
 
 
 protected:

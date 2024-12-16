@@ -41,39 +41,48 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 
 	bool gameStarted = false;
 
+	SDLNet_SocketSet set = SDLNet_AllocSocketSet(1);
+	SDLNet_TCP_AddSocket(set, client);
+
 	while (true) {
 		if (!gameStarted)
 		{
+			int socketCheck = SDLNet_CheckSockets(set, 0);
+			if (socketCheck > 0)
+			{
 
-			int received = SDLNet_TCP_Recv(client, buffer, sizeof(buffer));
-			if (received > 0) {
-				buffer[received - 1] = '\0';  // Null-terminate the received data
-				printf("Received: %s\n", buffer);
+				int received = SDLNet_TCP_Recv(client, buffer, sizeof(buffer));
+				if (received > 0) {
+					buffer[received] = '\0';  // Null-terminate the received data
+					printf("Received: %s\n", buffer);
 
-				// Check for the exit command
-				if (strcmp(buffer, "quit") == 0) {
-					printf("Client requested to exit. Closing connection.\n");
-					break;
-				}
+					// Check for the exit command
+					if (strcmp(buffer, "quit") == 0) {
+						printf("Client requested to exit. Closing connection.\n");
+						break;
+					}
 
-				if (strcmp(buffer, "Ready") == 0)
-				{
-					std::lock_guard<std::mutex> lock(clientListMutex);
-					playersReady[clientNum] = true;
-					std::cout << "Player " << clientNum + 1 << " is ready!" << std::endl;
-				}
+					if (strcmp(buffer, "Ready") == 0)
+					{
+						std::lock_guard<std::mutex> lock(clientListMutex);
+						playersReady[clientNum] = true;
+						std::cout << "Player " << clientNum + 1 << " is ready!" << std::endl;
+					}
 
 			
 
 
+				}
+				else {
+					// Client disconnected 
+					printf("Client Disconnected\n");
+					break;
+				}
+
 			}
-			else if (received == 0) {
-				// Client disconnected 
-				printf("Client Disconnected\n");
-				break;
-			}
-			else {
-				std::cerr << "Error receiving data from client: " << SDLNet_GetError() << std::endl;
+			else if (socketCheck < 0)
+			{
+				std::cerr << "Error checking client socket: " << SDLNet_GetError() << std::endl;
 				break;
 			}
 
@@ -97,21 +106,15 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 
 		else if (gameStarted)
 		{
-			SDLNet_SocketSet set = SDLNet_AllocSocketSet(1);
-			SDLNet_TCP_AddSocket(set, client);
 			int socketCheck = SDLNet_CheckSockets(set, 0);
 			if (socketCheck > 0)
 			{
 				int received = SDLNet_TCP_Recv(client, buffer, sizeof(buffer));
 				if (received > 0) {
 				}
-				else if (received == 0) {
+				else {
 					// Client disconnected 
 					printf("Client Disconnected\n");
-					break;
-				}
-				else {
-					std::cerr << "Error receiving data from client: " << SDLNet_GetError() << std::endl;
 					break;
 				}
 			}
@@ -120,7 +123,6 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 				std::cerr << "Error checking client socket: " << SDLNet_GetError() << std::endl;
 				break;
 			}
-
 
 		}
 	}
@@ -131,6 +133,30 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 	disconnectedClients[clientNum] = true;
 	// Handle client removal from your data structures if necessary
 }
+
+void handleUDP(bool& gameLoop, ServerNetworkManager& serverUDP, std::vector<Ref<Player>>& playerStates, std::vector<bool>& disconnectedClients, const int& numOfClients, const std::vector<IPaddress>& clientIPs)
+{
+	while (gameLoop)
+	{
+		int numDisconnected = 0;
+		for (auto clientDisconnected : disconnectedClients)
+		{
+			if (clientDisconnected)
+			{
+				numDisconnected++;
+			}
+		}
+		for (int i = 0; i < numOfClients - numDisconnected; i++)
+		{
+			serverUDP.ReceivePlayerState(playerStates);
+		}
+
+		serverUDP.SendPlayerStates(playerStates, clientIPs);
+
+		SDL_Delay(16);
+	}
+}
+
 
 void networkLobbyLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients, std::vector<bool>& disconnectedClients)
 //void networkLobbyLoop(bool serverLoop, TCPsocket server, std::vector<std::thread> &clientThreads, char *serverInput)
@@ -177,7 +203,7 @@ void networkLobbyLoop(bool& serverLoop, TCPsocket server, std::vector<std::threa
 			}
 
 		}
-		if (everyoneReady)
+		if (everyoneReady && numOfClients > 1)
 		{
 			serverLoop = false;
 
@@ -190,21 +216,46 @@ void networkLobbyLoop(bool& serverLoop, TCPsocket server, std::vector<std::threa
 
 }
 
-void networkGameLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients, std::vector<bool>& disconnectedClients)
+void networkGameLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients, std::vector<bool>& disconnectedClients, std::vector<IPaddress> clientIPs, std::vector<Ref<Player>> playerStates)
 {
+	
+	ServerNetworkManager serverUDP;
+	serverUDP.InitializeUDP();
+	
+	SDL_Color playerColor[4] = { 
+		{255, 0, 0, 255},
+		{0, 0, 255, 255},
+		{0, 255, 0, 255},
+		{255, 255, 0, 255}
+	};
+
+	std::pair<int, int> playerStartingPositions[4] = {
+		{375, WINDOW_HEIGHT - 75},
+		{375, WINDOW_HEIGHT - 75},
+		{375, WINDOW_HEIGHT - 75},
+		{375, WINDOW_HEIGHT - 75}
+	};
+
+	for (int i = 0; i < numOfClients; i++)
+	{
+		playerStates.push_back(
+			std::make_shared<Player>(
+				playerStartingPositions[i].first, playerStartingPositions[i].second, 40, playerColor[i]
+			)
+		);
+	}
+	
+	std::thread udpThread = std::thread(handleUDP, 
+		std::ref(serverLoop), std::ref(serverUDP), std::ref(playerStates), 
+		std::ref(disconnectedClients), std::ref(numOfClients), std::ref(clientIPs));
+
 	while (serverLoop)
 	{
-
-		
-
-
-
-
-
 
 	}
 
 
+	serverUDP.Cleanup();
 }
 
 
@@ -234,17 +285,24 @@ int main(int argc, char* argv[])
 
 	char serverInput[1024];
 
+	std::vector<IPaddress> clientIPs;
+	std::vector<Ref<Player>> playerStates;
 
-
-
+	
 	while (!quit)
 	{
 		networkLobbyLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients);
 		serverLoop = true;
-		networkGameLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients);
+		networkGameLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients, clientIPs, playerStates);
 
 	}
 
+
+
+	for (int i = 0; i < clientThreads.size(); i++)
+	{
+		clientThreads[i].join();
+	}
 
 
 

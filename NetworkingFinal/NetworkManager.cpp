@@ -3,6 +3,8 @@
 #include "PlayerStateMini.h"
 #include "Player.h"
 
+std::mutex NetworkManager::playerStateMutex;
+
 bool NetworkManager::InitializeUDP()
 {
 	//open UDP socket
@@ -31,6 +33,7 @@ void NetworkManager::Cleanup()
 
 void NetworkManager::SerializePlayerState(UDPpacket* packet, std::vector<Ref<Player>> playerStates, int playerNum)
 {
+	std::lock_guard<std::mutex> lock(playerStateMutex);
 	PlayerStateMini playerSerialized(playerNum, *playerStates[playerNum]);
 	memcpy(packet->data, &playerSerialized, sizeof(playerSerialized));
 	packet->len = sizeof(playerSerialized);
@@ -45,6 +48,7 @@ void NetworkManager::DeserializePlayerState(UDPpacket* packet, std::vector<Ref<P
 
 	int playerNum = clientSerialized.playerNum;
 	
+	std::lock_guard<std::mutex> lock(playerStateMutex);
 	playerStates[playerNum]->rect.x = clientSerialized.x;
 	playerStates[playerNum]->rect.y = clientSerialized.y;
 	playerStates[playerNum]->velX = float(clientSerialized.velXHundredths) / 100.0f;
