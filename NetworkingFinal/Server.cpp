@@ -7,15 +7,19 @@
 #include <vector>
 #include <mutex>
 #include "ServerNetworkManager.h"
+#include "Arrow.h"
+#include "Platform.h"
+#include "Player.h"
+#include "CollisionChecking.h"
 
 /*
 Contributions:
 Name: Nathan Brobbey, Student Number N01588517 || TCP Lobby
-Name: Amelia Morton, Student Number N01503241 || Game Loop, UDP, and bug fixing
+Name: Amelia Morton, Student Number N01503241 || UDP, Game Loop (game logic copied from Tan's test.cpp), and bug fixing
 */
 
-const int WINDOW_WIDTH = 1024;
-const int WINDOW_HEIGHT = 768;
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
 
 std::mutex clientListMutex;
 std::vector<bool> playersReady;
@@ -227,14 +231,14 @@ void networkGameLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread
 	ServerNetworkManager serverUDP;
 	serverUDP.InitializeUDP();
 	
-	SDL_Color playerColor[4] = { 
+	const SDL_Color playerColor[4] = { 
 		{255, 0, 0, 255},
 		{0, 0, 255, 255},
 		{0, 255, 0, 255},
 		{255, 255, 0, 255}
 	};
 
-	std::pair<int, int> playerStartingPositions[4] = {
+	const std::pair<int, int> playerStartingPositions[4] = {
 		{375, WINDOW_HEIGHT - 75},
 		{375, WINDOW_HEIGHT - 75},
 		{375, WINDOW_HEIGHT - 75},
@@ -250,13 +254,182 @@ void networkGameLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread
 		);
 	}
 	
+	const SDL_Color WALL_COLOR = { 255, 255, 255, 255 };
+
+	SDL_Rect wall_1 = { 0, 575, WINDOW_WIDTH , 25 }; // Floor
+	SDL_Rect wall_2 = { 0, 0, WINDOW_WIDTH, 25 }; // Ceiling
+
+	// Initialize platforms
+	std::vector<Platform> platforms;
+
+	// Static Platform
+	platforms.emplace_back(200, 500, 100, 20, WALL_COLOR); // static platform
+	platforms.emplace_back(50, 400, 100, 20, WALL_COLOR); // static platform
+	platforms.emplace_back(400, 450, 100, 20, WALL_COLOR); // static platform
+	platforms.emplace_back(700, 500, 100, 20, WALL_COLOR); // static platform
+	platforms.emplace_back(300, 300, 100, 20, WALL_COLOR); // static platform
+
+	// Initialize arrows
+	std::vector<Arrow> arrows;
+
+	Uint32 lastTick = SDL_GetTicks();
+
+	// Frame rate control variables
+	const int FPS = 60;
+	const int frameDelay = 1000 / FPS;
+
+	Uint32 frameStart;
+	int frameTime;
+
+	const float EPSILON = 0.1f;
+
 	std::thread udpThread = std::thread(handleUDP, 
 		std::ref(serverLoop), std::ref(serverUDP), std::ref(playerStates), 
 		std::ref(disconnectedClients), std::ref(numOfClients), std::ref(clientIPs));
 
 	while (serverLoop)
 	{
+		// Calculate deltaTime
+		Uint32 currentTick = SDL_GetTicks();
+		float deltaTime = (currentTick - lastTick) / 1000.0f; // seconds
+		lastTick = currentTick;
 
+		NetworkManager::playerStateMutex.lock();
+		for (auto player : playerStates)
+		{
+			player->Update(deltaTime);
+		}
+		NetworkManager::playerStateMutex.unlock();
+
+		// Update arrows
+		for (auto& arrow : arrows) {
+			if (arrow.active) {
+				arrow.Update(deltaTime);
+			}
+		}
+
+		// Remove inactive arrows
+		arrows.erase(std::remove_if(arrows.begin(), arrows.end(),
+			[](const Arrow& a) { return !a.active; }), arrows.end());
+
+		// Conditional Collision Handling
+
+		NetworkManager::playerStateMutex.lock();
+		for (auto playerState : playerStates)
+		{
+			Player player = *playerState;
+
+			// Reset currentPlatform pointer
+			player.currentPlatform = nullptr;
+
+			// Collision with floor
+			CollisionInfo collision = checkCollision(player.rect, wall_1);
+			if (collision.isColliding && collision.direction == CollisionDirection::BOTTOM) {
+				player.rect.y = wall_1.y - player.rect.h - static_cast<int>(EPSILON);
+				player.velY = 0.0f;
+				player.isJumping = false;
+				player.isGrounded = true;
+				std::cout << "Player landed on the floor." << std::endl;
+			}
+			else {
+				player.isGrounded = false;
+			}
+
+			// Collision with ceiling
+			collision = checkCollision(player.rect, wall_2);
+			if (collision.isColliding && collision.direction == CollisionDirection::TOP) {
+				player.rect.y = wall_2.y + wall_2.h + static_cast<int>(EPSILON);
+				player.velY = 0.0f;
+				std::cout << "Player hit the ceiling." << std::endl;
+			}
+
+			// Collision with platforms
+			for (auto& platform : platforms) {
+				collision = checkCollision(player.rect, platform.rect);
+				if (collision.isColliding) {
+					switch (collision.direction) {
+					case CollisionDirection::TOP:
+						// Player hits the bottom of a platform
+						player.rect.y = platform.rect.y + platform.rect.h;
+						player.velY = 0.0f;
+						std::cout << "Player hit the bottom of a platform." << std::endl;
+						break;
+					case CollisionDirection::BOTTOM:
+						// Player lands on top of a platform
+						player.rect.y = platform.rect.y - player.rect.h;
+						player.velY = 0.0f;
+						player.isJumping = false;
+						player.isGrounded = true;
+						player.currentPlatform = &platform;
+						std::cout << "Player landed on a platform." << std::endl;
+						break;
+					case CollisionDirection::LEFT:
+						// Player hits the left side of a platform
+						player.rect.x = platform.rect.x - player.rect.w;
+						player.velX = 0.0f;
+						std::cout << "Player hit the left side of a platform." << std::endl;
+						break;
+					case CollisionDirection::RIGHT:
+						// Player hits the right side of a platform
+						player.rect.x = platform.rect.x + platform.rect.w;
+						player.velX = 0.0f;
+						std::cout << "Player hit the right side of a platform." << std::endl;
+						break;
+					default:
+						break;
+					}
+				}
+			}
+
+
+			// Move the player along with the platform if standing on one
+			if (player.isGrounded && player.currentPlatform != nullptr && player.velY == 0.0f) {
+				if (player.currentPlatform->platformType == PlatformType::LEFT_RIGHT) {
+					player.rect.x += static_cast<int>(player.currentPlatform->speed * player.currentPlatform->direction * deltaTime);
+				}
+				else if (player.currentPlatform->platformType == PlatformType::UP_DOWN) {
+					player.rect.y += static_cast<int>(player.currentPlatform->speed * player.currentPlatform->direction * deltaTime);
+				}
+
+				// Ensure the player doesn't move beyond screen boundaries when moving with the platform
+				if (player.rect.x + player.rect.w < 0) {
+					player.rect.x = WINDOW_WIDTH;
+				}
+				else if (player.rect.x > WINDOW_WIDTH) {
+					player.rect.x = -player.rect.w;
+				}
+			}
+
+			// Screen Wrapping - Horizontal (if player is not on a moving platform)
+			if (!player.isGrounded) {
+				if (player.rect.x + player.rect.w < 0) { // Player moved off the left side
+					player.rect.x = WINDOW_WIDTH;
+					std::cout << "Player wrapped to the right side of the screen." << std::endl;
+				}
+				else if (player.rect.x > WINDOW_WIDTH) { // Player moved off the right side
+					player.rect.x = -player.rect.w;
+					std::cout << "Player wrapped to the left side of the screen." << std::endl;
+				}
+			}
+
+			// Check collisions between arrows and player
+			for (auto& arrow : arrows) {
+				if (!arrow.active) continue;
+
+				CollisionInfo checkClollision = checkCollision(arrow.rect, player.rect);
+
+				if (checkClollision.isColliding) {
+					arrow.active = false;
+					// Handle player death
+					player.isDead = true;
+					player.velX = 0;
+					player.velY = 0;
+					player.currentPlatform = nullptr; // Reset current platform
+					std::cout << "Player hit by an arrow!" << std::endl;
+				}
+			}
+		}
+		NetworkManager::playerStateMutex.unlock();
 	}
 
 
@@ -293,14 +466,12 @@ int main(int argc, char* argv[])
 	std::vector<IPaddress> clientIPs;
 	std::vector<Ref<Player>> playerStates;
 
-	
-	while (!quit)
-	{
-		networkLobbyLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients);
-		serverLoop = true;
-		networkGameLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients, clientIPs, playerStates);
 
-	}
+	
+	networkLobbyLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients);
+	serverLoop = true;
+	networkGameLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients, clientIPs, playerStates);
+
 
 
 

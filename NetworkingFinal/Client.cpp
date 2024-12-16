@@ -10,8 +10,8 @@ Name: Matteo Mastrantoni, Student Number N01541856 || Client.cpp code
 Name: Joseph D'Elia, n01438727 || implementing the level/player data into Client.cpp 
 */
 
-const int WINDOW_WIDTH = 1024;
-const int WINDOW_HEIGHT = 768; 
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600; 
 
 //game colors
 const SDL_Color PLAYER_COLOR = { 0, 255, 0, 255 };
