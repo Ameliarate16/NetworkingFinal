@@ -8,6 +8,7 @@
 #include <mutex>
 #include "ServerNetworkManager.h"
 
+
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768;
 
@@ -96,7 +97,7 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 
 		else if (gameStarted)
 		{
-			SDLNet_SocketSet set;
+			SDLNet_SocketSet set = SDLNet_AllocSocketSet(1);
 			SDLNet_TCP_AddSocket(set, client);
 			int socketCheck = SDLNet_CheckSockets(set, 0);
 			if (socketCheck > 0)
@@ -194,7 +195,7 @@ void networkGameLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread
 	while (serverLoop)
 	{
 
-
+		
 
 
 
