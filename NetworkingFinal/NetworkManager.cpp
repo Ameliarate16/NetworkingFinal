@@ -35,14 +35,6 @@ void NetworkManager::SerializePlayerState(UDPpacket* packet, std::vector<Ref<Pla
 	memcpy(packet->data, &playerSerialized, sizeof(playerSerialized));
 	packet->len = sizeof(playerSerialized);
 
-	/*
-	for (auto clientIP : clients)
-	{
-		packet->address = clientIP;
-		SDLNet_UDP_Send(udpSocket, -1, packet);
-	}
-	*/
-
 }
 
 void NetworkManager::DeserializePlayerState(UDPpacket* packet, std::vector<Ref<Player>> playerStates)

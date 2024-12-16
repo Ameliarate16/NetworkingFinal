@@ -32,34 +32,54 @@ TCPsocket init(const char* host, Uint16 port)
 
 
 
-void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfClients)
+void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfClients, std::vector<bool>& disconnectedClients)
 //void handleClient(TCPsocket client)
 {
 	char buffer[1024];
 	//const char* response = "Server received your message.";
 
-	while (true) {
-		int received = SDLNet_TCP_Recv(client, buffer, sizeof(buffer));
-		if (received > 0) {
-			buffer[received - 1] = '\0';  // Null-terminate the received data
-			printf("Received: %s\n", buffer);
+	bool gameStarted = false;
 
-			// Check for the exit command
-			if (strcmp(buffer, "quit") == 0) {
-				printf("Client requested to exit. Closing connection.\n");
+	while (true) {
+		if (!gameStarted)
+		{
+
+			int received = SDLNet_TCP_Recv(client, buffer, sizeof(buffer));
+			if (received > 0) {
+				buffer[received - 1] = '\0';  // Null-terminate the received data
+				printf("Received: %s\n", buffer);
+
+				// Check for the exit command
+				if (strcmp(buffer, "quit") == 0) {
+					printf("Client requested to exit. Closing connection.\n");
+					break;
+				}
+
+				if (strcmp(buffer, "Ready") == 0)
+				{
+					std::lock_guard<std::mutex> lock(clientListMutex);
+					playersReady[clientNum] = true;
+					std::cout << "Player " << clientNum + 1 << " is ready!" << std::endl;
+				}
+
+			
+
+
+			}
+			else if (received == 0) {
+				// Client disconnected 
+				printf("Client Disconnected\n");
 				break;
 			}
-
-			if (strcmp(buffer, "Ready") == 0)
-			{
-				playersReady[clientNum] = true;
-				std::cout << "Player " << clientNum + 1 << " is ready!" << std::endl;
+			else {
+				std::cerr << "Error receiving data from client: " << SDLNet_GetError() << std::endl;
+				break;
 			}
 
 			int readyCounter = 0;
 			for (auto readyCheck : playersReady)
 			{
-				if (readyCheck == true)
+				if (readyCheck == true || disconnectedClients[readyCounter])
 				{
 					readyCounter++;
 					
@@ -70,27 +90,49 @@ void handleClient(TCPsocket client, char* serverMsg, int clientNum, int& numOfCl
 			{
 				std::string message = "start";
 				SDLNet_TCP_Send(client, message.c_str(), message.length());
-			
+				gameStarted = true;
 			}
-			
-
-
 		}
-		else {
-			// Client disconnected or error occurred
-			printf("Client Disconnected\n");
-			break;
+
+		else if (gameStarted)
+		{
+			SDLNet_SocketSet set;
+			SDLNet_TCP_AddSocket(set, client);
+			int socketCheck = SDLNet_CheckSockets(set, 0);
+			if (socketCheck > 0)
+			{
+				int received = SDLNet_TCP_Recv(client, buffer, sizeof(buffer));
+				if (received > 0) {
+				}
+				else if (received == 0) {
+					// Client disconnected 
+					printf("Client Disconnected\n");
+					break;
+				}
+				else {
+					std::cerr << "Error receiving data from client: " << SDLNet_GetError() << std::endl;
+					break;
+				}
+			}
+			else if (socketCheck < 0)
+			{
+				std::cerr << "Error checking client socket: " << SDLNet_GetError() << std::endl;
+				break;
+			}
+
+
 		}
 	}
 
 	SDLNet_TCP_Close(client);
 
 	std::lock_guard<std::mutex> lock(clientListMutex);
+	disconnectedClients[clientNum] = true;
 	// Handle client removal from your data structures if necessary
 }
 
-void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients)
-//void networkLoop(bool serverLoop, TCPsocket server, std::vector<std::thread> &clientThreads, char *serverInput)
+void networkLobbyLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients, std::vector<bool>& disconnectedClients)
+//void networkLobbyLoop(bool serverLoop, TCPsocket server, std::vector<std::thread> &clientThreads, char *serverInput)
 {
 	while (serverLoop) 
 	{
@@ -106,7 +148,8 @@ void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& c
 			//std::thread clientThread(handleClient, client);
 			std::string message = std::to_string(numOfClients);
 			SDLNet_TCP_Send(client, message.c_str(), message.length());
-			std::thread clientThread(handleClient, client, serverInput, numOfClients -1, std::ref(numOfClients));
+			disconnectedClients.push_back(false);
+			std::thread clientThread(handleClient, client, serverInput, numOfClients -1, std::ref(numOfClients), std::ref(disconnectedClients));
 			clientThreads.push_back(std::move(clientThread));
 
 
@@ -146,7 +189,7 @@ void networkLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& c
 
 }
 
-void networkGameLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients)
+void networkGameLoop(bool& serverLoop, TCPsocket server, std::vector<std::thread>& clientThreads, char* serverInput, int& numOfClients, std::vector<bool>& disconnectedClients)
 {
 	while (serverLoop)
 	{
@@ -176,6 +219,7 @@ int main(int argc, char* argv[])
 	//Nathan work here
 
 	std::vector<std::thread> clientThreads;
+	std::vector<bool> disconnectedClients;
 
 	int numOfClients = 0;
 	bool quit = false;
@@ -194,8 +238,9 @@ int main(int argc, char* argv[])
 
 	while (!quit)
 	{
-		networkLoop(serverLoop, server, clientThreads, serverInput, numOfClients);
-
+		networkLobbyLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients);
+		serverLoop = true;
+		networkGameLoop(serverLoop, server, clientThreads, serverInput, numOfClients, disconnectedClients);
 
 	}
 

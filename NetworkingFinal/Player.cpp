@@ -8,7 +8,7 @@ Player::Player(int x, int y, int size, SDL_Color color)
     dashCooldown(1.5f), dashDirX(0.0f), dashDirY(0.0f),
     isJumping(false), gravity(1500.0f), jumpSpeed(600.0f), // Adjusted values
     isDead(false), shotCooldown(0.5f), currentPlatform(nullptr),
-    isGrounded(false)
+    isGrounded(false), livesLeft(maxLives)
 {
     rect = { x, y, size, size };
     this->color = color;

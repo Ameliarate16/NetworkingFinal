@@ -1,4 +1,5 @@
 #include "ServerNetworkManager.h"
+#include <iostream>
 
 void ServerNetworkManager::SendPlayerStates(std::vector<Ref<Player>> playerStates, std::vector<IPaddress> clients)
 {
@@ -9,7 +10,12 @@ void ServerNetworkManager::SendPlayerStates(std::vector<Ref<Player>> playerState
 		for (int clientNum = 0; clientNum < clients.size(); clientNum++)
 		{
 			packet->address = clients[clientNum];
-			SDLNet_UDP_Send(udpSocket, -1, packet);
+			if (!SDLNet_UDP_Send(udpSocket, -1, packet))
+			{
+				std::cerr << "Failed to send player state to client " << clients[clientNum].host 
+					<< ":" << clients[clientNum].port << " : " << SDLNet_GetError() << std::endl;
+			}
+
 		}
 
 		memset(packet->data, 0, packet->maxlen);
@@ -18,10 +24,15 @@ void ServerNetworkManager::SendPlayerStates(std::vector<Ref<Player>> playerState
 
 void ServerNetworkManager::ReceivePlayerState(std::vector<Ref<Player>> playerStates)
 {
-	if (SDLNet_UDP_Recv(udpSocket, packet) != 0)
+	int receiveResult = SDLNet_UDP_Recv(udpSocket, packet);
+	if (receiveResult > 0)
 	{
 		DeserializePlayerState(packet, playerStates);
 		
 		memset(packet->data, 0, packet->maxlen);
+	}
+	else if (receiveResult < 0)
+	{
+		std::cerr << "Error receiving player state from client: " << SDLNet_GetError() << std::endl;
 	}
 }

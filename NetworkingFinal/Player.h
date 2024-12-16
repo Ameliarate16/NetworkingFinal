@@ -30,6 +30,9 @@ public:
 	bool isDead; 
 	bool isGrounded; 
 
+	int livesLeft;
+	const int maxLives = 5;
+
 	const float MAX_VEL_X = 500.0f;
 	const float MAX_VEL_Y = 1000.0f; 
 
