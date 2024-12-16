@@ -4,6 +4,10 @@
 #include <memory>
 #include <mutex>
 
+/*
+Contributions:
+Name: Amelia Morton, Student Number N01503241 || Implementation of NetworkManager, ClientNetworkManager, and ServerNetworkManager
+*/
 
 template<typename T>
 using Ref = std::shared_ptr<T>;

@@ -4,6 +4,11 @@
 
 #include <SDL2/SDL.h>
 
+/*
+Contributions:
+Name: Tan Phi, Student Number N01587949 || Game Implementation, Player, Arrow, Platform, CollisionChecking
+*/
+
 class Arrow {
 public:
     SDL_Rect rect;

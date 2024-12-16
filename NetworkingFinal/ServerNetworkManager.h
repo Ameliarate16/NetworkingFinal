@@ -4,6 +4,11 @@
 #include <vector>
 #include <memory>
 
+/*
+Contributions:
+Name: Amelia Morton, Student Number N01503241 || Implementation of NetworkManager, ClientNetworkManager, and ServerNetworkManager
+*/
+
 class ServerNetworkManager :
 	public NetworkManager
 {

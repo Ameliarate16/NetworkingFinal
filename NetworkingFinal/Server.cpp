@@ -8,6 +8,11 @@
 #include <mutex>
 #include "ServerNetworkManager.h"
 
+/*
+Contributions:
+Name: Nathan Brobbey, Student Number N01588517 || TCP Lobby
+Name: Amelia Morton, Student Number N01503241 || Game Loop, UDP, and bug fixing
+*/
 
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768;

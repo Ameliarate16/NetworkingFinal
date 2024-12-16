@@ -5,6 +5,11 @@
 #include <chrono>
 #include "Platform.h"
 
+/*
+Contributions:
+Name: Tan Phi, Student Number N01587949 || Game Implementation, Player, Arrow, Platform, CollisionChecking
+*/
+
 class Player
 {
 public:

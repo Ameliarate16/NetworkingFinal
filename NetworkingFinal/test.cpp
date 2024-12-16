@@ -9,6 +9,11 @@
 #include "Platform.h"
 #include "CollisionChecking.h"
 
+/*
+Contributions:
+Name: Tan Phi, Student Number N01587949 || Game Implementation, Player, Arrow, Platform, CollisionChecking
+*/
+
 // Define screen dimensions
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
