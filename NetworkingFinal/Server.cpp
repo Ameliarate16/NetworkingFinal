@@ -212,7 +212,7 @@ void networkLobbyLoop(bool& serverLoop, TCPsocket server, std::vector<std::threa
 			}
 
 		}
-		if (everyoneReady && numOfClients > 1)
+		if (everyoneReady && numOfClients > 0)
 		{
 			serverLoop = false;
 

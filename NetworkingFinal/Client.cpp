@@ -135,6 +135,7 @@ int main(int argc, char* argv[])
 		{
 			buffer[recived] = '\0';
 			std::cout << " Server Message says: " << buffer << std::endl;
+			break;
 		}
 		else if (recived == 0)
 		{
